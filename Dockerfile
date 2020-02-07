@@ -75,6 +75,7 @@ RUN echo "**** get Miniconda ****" && \
       fitsio \
       ngmix \
       treecorr \
+      tini \
       scikit-learn \
       galsim \
       && \
