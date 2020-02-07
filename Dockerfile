@@ -41,11 +41,16 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # make sure the install below is not cached by docker
 ADD http://worldclockapi.com/api/json/utc/now /opt/docker/etc/timestamp
 
-# Install conda
+# add bash and force it to the be the default shell
 RUN echo "**** install dev packages ****" && \
     apk add --no-cache bash ca-certificates wget && \
-    \
-    echo "**** get Miniconda ****" && \
+    echo "**** cleanup ****" && \
+    rm -rf /var/cache/apk/*
+
+SHELL ["/bin/bash", "-c"]
+
+# Install conda
+RUN echo "**** get Miniconda ****" && \
     mkdir -p "$CONDA_DIR" && \
     wget "http://repo.continuum.io/miniconda/Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh" -O miniconda.sh && \
     echo "$CONDA_MD5  miniconda.sh" | md5sum -c && \
@@ -74,7 +79,6 @@ RUN echo "**** install dev packages ****" && \
       galsim \
       && \
     echo "**** cleanup ****" && \
-    rm -rf /var/cache/apk/* && \
     rm -f miniconda.sh && \
     conda clean --all --force-pkgs-dirs --yes && \
     find "$CONDA_DIR" -follow -type f \( -iname '*.a' -o -iname '*.pyc' -o -iname '*.js.map' \) -delete && \
