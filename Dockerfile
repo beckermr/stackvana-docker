@@ -78,6 +78,9 @@ RUN echo "**** get Miniconda ****" && \
       tini \
       scikit-learn \
       galsim \
+      meds \
+      numba \
+      esutil \
       && \
     echo "**** cleanup ****" && \
     rm -f miniconda.sh && \
