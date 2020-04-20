@@ -79,5 +79,4 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
     find ${CONDA_DIR} -follow -type f -name '*.pyc' -delete && \
     conda clean -afy
 
-ENTRYPOINT ["tini", "--", "stackvana-run"]
 CMD [ "/bin/bash" ]

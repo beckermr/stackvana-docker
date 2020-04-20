@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-# set the thing up
-source /usr/local/share/stackvana-activate.sh
-
-$@
