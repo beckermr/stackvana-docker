@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# this should all be done in the bashrc of any created user or root
+export CONDA_DIR=/opt/conda
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+export PATH=${CONDA_DIR}/bin:${PATH}
+
+source ${CONDA_DIR}/etc/profile.d/conda.sh
+conda activate base
+
+echo " "
+echo "==================================================================================================="
+echo "==================================================================================================="
+
+conda info
+
+git config --global user.name "stackvana docker"
+git config --global user.email "stackvana-docker@email.to.nowhere.com"
+
+echo " "
+echo "==================================================================================================="
+echo "==================================================================================================="
