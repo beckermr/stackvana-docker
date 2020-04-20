@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 
+export CONDA_DIR=/opt/conda
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+export PATH=${CONDA_DIR}/bin:${PATH}
+
 echo " "
 echo "==================================================================================================="
 echo "==================================================================================================="
 
-source /opt/conda/etc/profile.d/conda.sh
+source ${CONDA_DIR}/etc/profile.d/conda.sh
 
 conda activate base
 

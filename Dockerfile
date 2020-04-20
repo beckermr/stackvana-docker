@@ -1,74 +1,49 @@
-FROM frolvlad/alpine-glibc:alpine-3.10
+FROM ubuntu:bionic
 
-# much of image code ripped from
-# https://github.com/Docker-Hub-frolvlad/docker-alpine-miniconda3
+COPY CONDA_FORGE_LICENSE /opt/CONDA_FORGE_LICENSE
 
-# license for docker image content
-RUN echo "\n\
-The MIT License (MIT)\n\
-\n\
-Copyright (c) 2016 Vlad\n\
-\n\
-Permission is hereby granted, free of charge, to any person obtaining a copy\n\
-of this software and associated documentation files (the \"Software\"), to deal\n\
-in the Software without restriction, including without limitation the rights\n\
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n\
-copies of the Software, and to permit persons to whom the Software is\n\
-furnished to do so, subject to the following conditions:\n\
-\n\
-The above copyright notice and this permission notice shall be included in all\n\
-copies or substantial portions of the Software.\n\
-\n\
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n\
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n\
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n\
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n\
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n\
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n\
-SOFTWARE." > BASE_IMAGE_LICENSE
+ARG MINIFORGE_VERSION=4.8.2-1
+ARG TINI_VERSION=v0.18.0
 
-LABEL maintainer="Matthew R. Becker (becker.mr@gmail.com)"
+ARG CONDA_DIR=/opt/conda
+ARG LANG=C.UTF-8
+ARG LC_ALL=C.UTF-8
+ARG PATH=${CONDA_DIR}/bin:${PATH}
 
-ENV LANG en_US.UTF-8
-
-ARG CONDA_VERSION="4.7.12.1"
-ARG CONDA_MD5="81c773ff87af5cfac79ab862942ab6b3"
-ARG CONDA_DIR="/opt/conda"
-
-ENV PATH="$CONDA_DIR/bin:$PATH"
-ENV PYTHONDONTWRITEBYTECODE=1
+SHELL ["/bin/bash", "-c"]
 
 # make sure the install below is not cached by docker
 ADD http://worldclockapi.com/api/json/utc/now /opt/docker/etc/timestamp
 
-# add bash and force it to the be the default shell
-RUN echo "**** install dev packages ****" && \
-    apk add --no-cache bash ca-certificates wget && \
-    echo "**** cleanup ****" && \
-    rm -rf /var/cache/apk/*
+# Install just enough for conda to work
+RUN apt-get update > /dev/null && \
+    apt-get install --no-install-recommends --yes \
+        wget bzip2 ca-certificates \
+        git > /dev/null && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-SHELL ["/bin/bash", "-c"]
+# Keep $HOME clean (no .wget-hsts file), since HSTS isn't useful in this context
+RUN wget --no-hsts --quiet https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini -O /usr/local/bin/tini && \
+    chmod +x /usr/local/bin/tini
 
-# Install conda
-RUN echo "**** get Miniconda ****" && \
-    mkdir -p "$CONDA_DIR" && \
-    wget "http://repo.continuum.io/miniconda/Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh" -O miniconda.sh && \
-    echo "$CONDA_MD5  miniconda.sh" | md5sum -c && \
-    \
-    echo "**** install Miniconda ****" && \
-    bash miniconda.sh -f -b -p "$CONDA_DIR" && \
-    \
-    echo "**** install base env ****" && \
-    source /opt/conda/etc/profile.d/conda.sh && \
+# 1. Install miniforge from GitHub releases
+# 2. Apply some cleanup tips from https://jcrist.github.io/conda-docker-tips.html
+#    Particularly, we remove pyc and a files. The default install has no js, we can skip that
+RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_VERSION}-Linux-x86_64.sh -O /tmp/miniforge.sh && \
+    /bin/bash /tmp/miniforge.sh -b -p ${CONDA_DIR} && \
+    rm /tmp/miniforge.sh && \
+    source ${CONDA_DIR}/etc/profile.d/conda.sh && \
     conda activate base && \
     conda config --set show_channel_urls True  && \
+    conda config --add channels defaults  && \
     conda config --add channels conda-forge  && \
     conda config --show-sources  && \
     conda config --set always_yes yes && \
-    conda update --all && \
-    conda install --quiet -c stackvana \
+    conda info && \
+    conda install --quiet --yes -c stackvana \
       "stackvana==2019.44w" && \
-    conda install --quiet \
+    conda install --quiet --yes \
       lsstdesc.weaklensingdeblending \
       flake8 \
       pytest \
@@ -82,19 +57,25 @@ RUN echo "**** get Miniconda ****" && \
       numba \
       esutil \
       && \
-    echo "**** cleanup ****" && \
-    rm -f miniconda.sh && \
-    conda clean --all --force-pkgs-dirs --yes && \
-    find "$CONDA_DIR" -follow -type f \( -iname '*.a' -o -iname '*.pyc' -o -iname '*.js.map' \) -delete && \
-    \
-    echo "**** finalize ****" && \
-    mkdir -p "$CONDA_DIR/locks" && \
-    chmod 777 "$CONDA_DIR/locks"
+    conda clean -tipsy && \
+    find ${CONDA_DIR} -follow -type f -name '*.a' -delete && \
+    find ${CONDA_DIR} -follow -type f -name '*.pyc' -delete && \
+    conda clean -afy
 
-COPY entrypoint /opt/docker/bin/entrypoint
+# these are done in the stackvana-run script because the container
+# cannot have env vars on the OSG
+# # Activate base by default when running as any *non-root* user as well
+# # Good security practice requires running most workloads as non-root
+# # This makes sure any non-root users created also have base activated
+# # for their interactive shells.
+# RUN echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> /etc/skel/.bashrc
+#
+# # Activate base by default when running as root as well
+# # The root user is already created, so won't pick up changes to /etc/skel
+# RUN echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> ~/.bashrc
 
-ENTRYPOINT [\
-    "/opt/conda/bin/tini", \
-     "--", \
-     "/opt/docker/bin/entrypoint"\
-    ]
+COPY entrypoint /usr/local/bin/stackvana-run
+RUN chmod a+x /usr/local/bin/stackvana-run
+
+ENTRYPOINT ["tini", "--", "stackvana-run"]
+CMD [ "/bin/bash" ]
