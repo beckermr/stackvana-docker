@@ -12,6 +12,31 @@ ARG PATH=${CONDA_DIR}/bin:${PATH}
 
 SHELL ["/bin/bash", "-c"]
 
+# Activate base by default when running as any *non-root* user as well
+# Good security practice requires running most workloads as non-root
+# This makes sure any non-root users created also have base activated
+# for their interactive shells.
+RUN echo -e "export CONDA_DIR=/opt/conda\n\
+export LANG=C.UTF-8\n\
+export LC_ALL=C.UTF-8\n\
+export PATH=\${CONDA_DIR}/bin:\${PATH}\n\
+\n\
+. /opt/conda/etc/profile.d/conda.sh && conda activate base\n\
+" >> /etc/skel/.bashrc && \
+    cat /etc/skel/.bashrc
+
+# Activate base by default when running as root as well
+# The root user is already created, so won't pick up changes to /etc/skel
+RUN echo -e "export CONDA_DIR=/opt/conda\n\
+export LANG=C.UTF-8\n\
+export LC_ALL=C.UTF-8\n\
+export PATH=\${CONDA_DIR}/bin:\${PATH}\n\
+\n\
+. /opt/conda/etc/profile.d/conda.sh && conda activate base\n\
+" >> ~/.bashrc && \
+    cat ~/.bashrc
+
+
 # make sure the install below is not cached by docker
 ADD http://worldclockapi.com/api/json/utc/now /opt/docker/etc/timestamp
 
@@ -61,16 +86,6 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
     find ${CONDA_DIR} -follow -type f -name '*.a' -delete && \
     find ${CONDA_DIR} -follow -type f -name '*.pyc' -delete && \
     conda clean -afy
-
-# Activate base by default when running as any *non-root* user as well
-# Good security practice requires running most workloads as non-root
-# This makes sure any non-root users created also have base activated
-# for their interactive shells.
-RUN echo ". /opt/conda/etc/profile.d/conda.sh && conda activate base" >> /etc/skel/.bashrc
-
-# Activate base by default when running as root as well
-# The root user is already created, so won't pick up changes to /etc/skel
-RUN echo ". /opt/conda/etc/profile.d/conda.sh && conda activate base" >> ~/.bashrc
 
 COPY entrypoint /usr/local/bin/stackvana-run
 RUN chmod a+x /usr/local/bin/stackvana-run

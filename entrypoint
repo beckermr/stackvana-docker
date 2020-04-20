@@ -9,9 +9,8 @@ echo " "
 echo "==================================================================================================="
 echo "==================================================================================================="
 
-source ${CONDA_DIR}/etc/profile.d/conda.sh
-
-conda activate base
+# source ${CONDA_DIR}/etc/profile.d/conda.sh
+# conda activate base
 
 conda info
 
