@@ -62,17 +62,15 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
     find ${CONDA_DIR} -follow -type f -name '*.pyc' -delete && \
     conda clean -afy
 
-# these are done in the stackvana-run script because the container
-# cannot have env vars on the OSG
-# # Activate base by default when running as any *non-root* user as well
-# # Good security practice requires running most workloads as non-root
-# # This makes sure any non-root users created also have base activated
-# # for their interactive shells.
-# RUN echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> /etc/skel/.bashrc
-#
-# # Activate base by default when running as root as well
-# # The root user is already created, so won't pick up changes to /etc/skel
-# RUN echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> ~/.bashrc
+# Activate base by default when running as any *non-root* user as well
+# Good security practice requires running most workloads as non-root
+# This makes sure any non-root users created also have base activated
+# for their interactive shells.
+RUN echo ". /opt/conda/etc/profile.d/conda.sh && conda activate base" >> /etc/skel/.bashrc
+
+# Activate base by default when running as root as well
+# The root user is already created, so won't pick up changes to /etc/skel
+RUN echo ". /opt/conda/etc/profile.d/conda.sh && conda activate base" >> ~/.bashrc
 
 COPY entrypoint /usr/local/bin/stackvana-run
 RUN chmod a+x /usr/local/bin/stackvana-run
