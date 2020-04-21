@@ -12,8 +12,6 @@ ARG PATH=${CONDA_DIR}/bin:${PATH}
 
 SHELL ["/bin/bash", "-c"]
 
-COPY entrypoint /usr/local/bin/stackvana-run
-RUN chmod u+x /usr/local/bin/stackvana-run
 COPY activate /usr/local/share/stackvana-activate.sh
 
 # Activate base by default when running as any *non-root* user as well
