@@ -63,7 +63,7 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
       flake8 \
       pytest \
       fitsio \
-      ngmix \
+      "ngmix >1.3.7" \
       treecorr \
       tini \
       scikit-learn \
