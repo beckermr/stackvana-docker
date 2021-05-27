@@ -56,10 +56,9 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
     conda config --show-sources  && \
     conda config --set always_yes yes && \
     conda info && \
-    conda install --quiet --yes -c stackvana \
-      "stackvana==2019.44w" && \
-    conda install --quiet --yes \
-      lsstdesc.weaklensingdeblending \
+    conda install --quiet --yes mamba && \
+    mamba install --quiet --yes \
+      lsstdesc-weaklensingdeblending \
       flake8 \
       pytest \
       fitsio \
@@ -71,6 +70,7 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
       meds \
       numba \
       esutil \
+      stackvana=0 \
       && \
     conda clean -tipsy && \
     find ${CONDA_DIR} -follow -type f -name '*.a' -delete && \
