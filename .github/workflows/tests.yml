@@ -1,0 +1,22 @@
+name: tests
+on:
+  push:
+    branches:
+      - main
+  pull_request: null
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+
+    - name: build docker image
+      run: |
+        docker build -t test:latest .
+
+    - name: test image works
+      run: |
+        docker run --rm -t test:latest /bin/bash -ic 'python -c "import lsst"'
