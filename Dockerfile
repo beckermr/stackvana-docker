@@ -9,6 +9,7 @@ ARG CONDA_DIR=/opt/conda
 ARG LANG=C.UTF-8
 ARG LC_ALL=C.UTF-8
 ARG PATH=${CONDA_DIR}/bin:${PATH}
+ARG MAMBA_NO_BANNER=1
 
 SHELL ["/bin/bash", "-c"]
 
@@ -72,7 +73,7 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
       esutil \
       stackvana=0 \
       && \
-    conda clean -tipsy && \
+    conda clean --all --yes && \
     find ${CONDA_DIR} -follow -type f -name '*.a' -delete && \
     find ${CONDA_DIR} -follow -type f -name '*.pyc' -delete && \
     conda clean -afy
