@@ -2,7 +2,7 @@ FROM ubuntu:bionic
 
 COPY CONDA_FORGE_LICENSE /opt/CONDA_FORGE_LICENSE
 
-ARG MINIFORGE_VERSION=4.8.2-1
+ARG MINIFORGE_VERSION=4.10.3-7
 ARG TINI_VERSION=v0.18.0
 
 ARG CONDA_DIR=/opt/conda
@@ -45,7 +45,7 @@ RUN wget --no-hsts --quiet https://github.com/krallin/tini/releases/download/${T
 # 1. Install miniforge from GitHub releases
 # 2. Apply some cleanup tips from https://jcrist.github.io/conda-docker-tips.html
 #    Particularly, we remove pyc and a files. The default install has no js, we can skip that
-RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_VERSION}-Linux-x86_64.sh -O /tmp/miniforge.sh && \
+RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Mambaforge-${MINIFORGE_VERSION}-Linux-x86_64.sh -O /tmp/miniforge.sh && \
     /bin/bash /tmp/miniforge.sh -b -p ${CONDA_DIR} && \
     rm /tmp/miniforge.sh && \
     source ${CONDA_DIR}/etc/profile.d/conda.sh && \
@@ -56,7 +56,6 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
     conda config --show-sources  && \
     conda config --set always_yes yes && \
     conda info && \
-    conda install --quiet --yes mamba && \
     mamba install --quiet --yes \
       lsstdesc-weaklensingdeblending \
       flake8 \
