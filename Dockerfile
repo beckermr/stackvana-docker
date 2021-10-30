@@ -57,7 +57,7 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
     conda config --set always_yes yes && \
     conda info && \
     mamba install --quiet --yes  python=3.8 && \
-    mamba install --quiet --yes \
+    mamba install --yes \
       lsstdesc-weaklensingdeblending \
       flake8 \
       pytest \
