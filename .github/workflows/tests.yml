@@ -15,4 +15,8 @@ jobs:
 
     - name: build docker image
       run: |
-        docker build .
+        docker build -t test .
+    
+    - name: test image works
+      run: |
+        docker run --rm test:latest python "import lsst"
