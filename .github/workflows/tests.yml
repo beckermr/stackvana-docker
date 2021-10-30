@@ -15,7 +15,7 @@ jobs:
 
     - name: build docker image
       run: |
-        docker build -t test .
+        docker build -t test:latest .
     
     - name: test image works
       run: |
