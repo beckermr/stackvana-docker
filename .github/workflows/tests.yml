@@ -24,7 +24,7 @@ jobs:
     - name: upload
       if: github.ref == 'refs/heads/main'
       run: |
-        docker login --username ${PAT}
+        echo ${PAT} | docker login -u beckermr --password-stdin 
         docker push stackvana:latest
       env:
         PAT: ${{ secrets.DOCKER_PAT }}
