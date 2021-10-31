@@ -19,7 +19,7 @@ jobs:
 
     - name: test image works
       run: |
-        docker run --rm -t test:latest /bin/bash -ic 'python -c "import lsst"'
+        docker run --rm -t stackvana:latest /bin/bash -ic 'python -c "import lsst"'
         
     - name: upload
       if: github.ref == 'refs/heads/main'
