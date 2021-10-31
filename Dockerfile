@@ -29,7 +29,7 @@ RUN echo ". /usr/local/share/stackvana-activate.sh" >> ~/.bashrc && \
 
 
 # make sure the install below is not cached by docker
-ADD http://worldclockapi.com/api/json/utc/now /opt/docker/etc/timestamp
+ADD https://loripsum.net/api /opt/docker/etc/gibberish
 
 # Install just enough for conda to work
 RUN apt-get update > /dev/null && \
